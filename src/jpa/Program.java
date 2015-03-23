@@ -10,6 +10,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+import javax.print.attribute.standard.MediaSize.Other;
 
 public class Program {
 
@@ -110,7 +111,8 @@ public class Program {
 
     // Uj tipus felvetele
     public void ujTipus(String azonosito, String fajta) throws Exception {
-	Query q = em.createQuery("SELECT t FROM Tipus t WHERE t.azonosito = :azon");
+	Query q = em
+		.createQuery("SELECT t FROM Tipus t WHERE t.azonosito = :azon");
 	q.setParameter("azon", azonosito);
 	try {
 	    q.getSingleResult();
@@ -131,10 +133,11 @@ public class Program {
 	    System.out.println("?");
 	    return;
 	}
-	
-	Query tipusQuery = em.createQuery("SELECT t FROM Tipus t WHERE t.azonosito = :azon");
+
+	Query tipusQuery = em
+		.createQuery("SELECT t FROM Tipus t WHERE t.azonosito = :azon");
 	tipusQuery.setParameter("azon", tipusID);
-	
+
 	Tipus t = null;
 	try {
 	    t = (Tipus) tipusQuery.getSingleResult();
@@ -142,8 +145,9 @@ public class Program {
 	    System.out.println("?");
 	    return;
 	}
-	
-	Query mozdonyQuery = em.createQuery("SELECT m FROM Mozdony m WHERE m.id = :azon");
+
+	Query mozdonyQuery = em
+		.createQuery("SELECT m FROM Mozdony m WHERE m.id = :azon");
 	mozdonyQuery.setParameter("azon", sorszamInt);
 	try {
 	    mozdonyQuery.getSingleResult();
@@ -155,11 +159,25 @@ public class Program {
 
     // Uj vonatszam felvetele
     public void ujVonatszam(String sorszam, String uthossz) throws Exception {
-	// TODO
-	// Alak�tsa �t a megfelel� t�pusokra a kapott String param�tereket.
-	// Ellen�rizze, hogy van-e m�r ilyen vonatsz�m
-	// Hozza l�tre az �j "Vonatsz�m" entit�st �s r�gz�tse adatb�zisban az
-	// "ujEntity" met�dussal.
+	int sorszamInt;
+	long utHosszLong;
+	
+	try {
+	    sorszamInt = Integer.parseInt(sorszam);
+	    utHosszLong = Long.parseLong(uthossz);
+	} catch (NumberFormatException e) {
+	    System.out.println("?");
+	    return;
+	}
+	
+	Query vonatszamQuery = em.createQuery("SELECT vsz FROM Vonatszam vsz WHERE vsz.szam = :sorszam");
+	vonatszamQuery.setParameter("sorszam", sorszamInt);
+	try {
+	    vonatszamQuery.getSingleResult();
+	    System.out.println("?");
+	} catch (NoResultException e) {
+	    ujEntity(new Vonatszam(sorszamInt, utHosszLong));
+	}
     }
 
     // Uj vonat felvetele
@@ -191,16 +209,13 @@ public class Program {
 
     // Mozdonyok listazasa
     public void listazMozdony() throws Exception {
-	
 	Query mozdonyQuery = em.createQuery("SELECT m FROM Mozdony m");
 	listazEntity(mozdonyQuery.getResultList());
     }
 
     // Vonatszamok listazasa
     public void listazVonatszam() throws Exception {
-	// TODO
-	// K�sz�tsen lek�rdez�st, amely visszaadja az �sszes vonatsz�mot, majd
-	// irassa ki a listazEntity met�dussal az eredm�nyt.
+	listazEntity(em.createQuery("SELECT vsz FROM Vonatszam vsz").getResultList());
     }
 
     // Vonatok listazasa
