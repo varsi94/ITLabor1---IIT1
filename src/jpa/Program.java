@@ -41,7 +41,6 @@ public class Program {
 	app.initDB();
 	app.startControl();
 	app.closeDB();
-
     }
 
     public void startControl() {
@@ -240,6 +239,7 @@ public class Program {
     }
 
     // Listazasi szolgaltatasok
+    @SuppressWarnings("rawtypes")
     public void listazEntity(List list) {
 	for (Object o : list) {
 	    System.out.println(o);
@@ -253,8 +253,7 @@ public class Program {
 
     // Mozdonyok listazasa
     public void listazMozdony() throws Exception {
-	Query mozdonyQuery = em.createQuery("SELECT m FROM Mozdony m");
-	listazEntity(mozdonyQuery.getResultList());
+	listazEntity(em.createQuery("SELECT m FROM Mozdony m").getResultList());
     }
 
     // Vonatszamok listazasa
@@ -268,6 +267,7 @@ public class Program {
     }
 
     // Egyedi lekerdezes
+    @SuppressWarnings("unchecked")
     public void lekerdezes(String datum) throws Exception {
 	Date datumParsed;
 	try {

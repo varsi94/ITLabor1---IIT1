@@ -1,8 +1,9 @@
 package jpa;
 
-import java.util.List;
+import java.util.Collection;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -15,8 +16,8 @@ public class Mozdony {
     private long futottkm;
     @ManyToOne
     private Tipus tipus;
-    @OneToMany(mappedBy = "mozdony")
-    private List<Vonat> vonatok;
+    @OneToMany(mappedBy = "mozdony", fetch = FetchType.EAGER)
+    private Collection<Vonat> vonatok;
     
     public Mozdony(int id, int futottkm, Tipus tipus) {
 	this.id = id;
@@ -56,11 +57,11 @@ public class Mozdony {
         return id + " " + tipus.getAzonosito() + " " + futottkm;
     }
 
-    public List<Vonat> getVonatok() {
+    public Collection<Vonat> getVonatok() {
         return vonatok;
     }
 
-    public void setVonatok(List<Vonat> vonatok) {
+    public void setVonatok(Collection<Vonat> vonatok) {
         this.vonatok = vonatok;
     }
 }
