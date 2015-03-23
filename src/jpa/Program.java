@@ -232,7 +232,7 @@ public class Program {
 	    //jók vagyunk, mehetünk tovább
 	    ujEntity(new Vonat(datumParsed, kesesInt, mozdony, vsz));
 	    em.getTransaction().begin();
-	    mozdony.setFutottkm(mozdony.getFutottkm() + vsz.getUthossz());
+	    mozdony.setFutottkm(mozdony.getFutottkm() + vsz.getUthossz().intValue());
 	    em.persist(mozdony);
 	    em.getTransaction().commit();
 	}

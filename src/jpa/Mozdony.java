@@ -13,7 +13,7 @@ public class Mozdony {
 
     @Id
     private int id;
-    private long futottkm;
+    private int futottkm;
     @ManyToOne
     private Tipus tipus;
     @OneToMany(mappedBy = "mozdony", fetch = FetchType.EAGER)
@@ -28,11 +28,11 @@ public class Mozdony {
     public Mozdony() {
     }
 
-    public long getFutottkm() {
+    public int getFutottkm() {
 	return futottkm;
     }
 
-    public void setFutottkm(long futottkm) {
+    public void setFutottkm(int futottkm) {
 	this.futottkm = futottkm;
     }
 
