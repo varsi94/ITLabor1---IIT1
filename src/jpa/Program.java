@@ -1,185 +1,223 @@
 package jpa;
 
-import java.util.*;
-import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.logging.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
-import javax.persistence.NoResultException;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 public class Program {
 
-	private EntityManagerFactory factory;
-	private EntityManager em;
+    private EntityManagerFactory factory;
+    private EntityManager em;
 
-
-	public void initDB() {
-		factory = Persistence.createEntityManagerFactory(CommonData.getUnit());
-		em = factory.createEntityManager();
-	}
-
-	void closeDB() {
-
-		em.close();
-	}
-
-	public Program(EntityManager em) {
-	        this.em = em;
-	}	
-
-	public Program() {
-}	
-	
-	public static void main(String[] args) {
-		Program app = new Program();
-		app.initDB();
-		app.startControl();
-		app.closeDB();
-	
+    public void initDB() {
+	factory = Persistence.createEntityManagerFactory(CommonData.getUnit());
+	em = factory.createEntityManager();
     }
 
+    void closeDB() {
+
+	em.close();
+    }
+
+    public Program(EntityManager em) {
+	this.em = em;
+    }
+
+    public Program() {
+    }
+
+    public static void main(String[] args) {
+	Program app = new Program();
+	app.initDB();
+	app.startControl();
+	app.closeDB();
+
+    }
 
     public void startControl() {
-//	    InputStream input = System.in;
-        BufferedReader instream = new BufferedReader(new InputStreamReader(System.in));
-        while (true) {
-            try {
-                System.out.print(">");
-                String inputLine = instream.readLine();
-                StringTokenizer tokenizer = new StringTokenizer(inputLine, "   ");
-                String command = tokenizer.nextToken();
+	// InputStream input = System.in;
+	BufferedReader instream = new BufferedReader(new InputStreamReader(
+		System.in));
+	while (true) {
+	    try {
+		System.out.print(">");
+		String inputLine = instream.readLine();
+		StringTokenizer tokenizer = new StringTokenizer(inputLine,
+			"   ");
+		String command = tokenizer.nextToken();
 
-                if ("t".startsWith(command)) {
-                    ujTipus(readString(tokenizer), readString(tokenizer));
-                } else if ("m".startsWith(command)) {
-                    ujMozdony(readString(tokenizer), readString(tokenizer), readString(tokenizer));
-                } else if ("s".startsWith(command)) {
-                    ujVonatszam(readString(tokenizer), readString(tokenizer));
-                } else if ("v".startsWith(command)) {
-                    ujVonat(readString(tokenizer), readString(tokenizer),  readString(tokenizer), readString(tokenizer));
-                } else if ("l".startsWith(command)) {
-                    String targy = readString(tokenizer);
-                    if ("t".startsWith(targy)) {
-                        listazTipus();
-                    } else if ("m".startsWith(targy)) {
-                        listazMozdony();
-                    } else if ("s".startsWith(targy)) {
-                        listazVonatszam();
-                    } else if ("v".startsWith(targy)) {
-                        listazVonat();
-                    }
-                } else if ("x".startsWith(command)) {
-                    lekerdezes(readString(tokenizer));
-                } else if ("e".startsWith(command)) {
-                    break;
-                } else {
-                    throw new Exception("Hibas parancs! (" + inputLine + ")");
-                }
-            } catch (Exception e) {
-                System.out.println("? " + e.toString());
-            }
-        }
+		if ("t".startsWith(command)) {
+		    ujTipus(readString(tokenizer), readString(tokenizer));
+		} else if ("m".startsWith(command)) {
+		    ujMozdony(readString(tokenizer), readString(tokenizer),
+			    readString(tokenizer));
+		} else if ("s".startsWith(command)) {
+		    ujVonatszam(readString(tokenizer), readString(tokenizer));
+		} else if ("v".startsWith(command)) {
+		    ujVonat(readString(tokenizer), readString(tokenizer),
+			    readString(tokenizer), readString(tokenizer));
+		} else if ("l".startsWith(command)) {
+		    String targy = readString(tokenizer);
+		    if ("t".startsWith(targy)) {
+			listazTipus();
+		    } else if ("m".startsWith(targy)) {
+			listazMozdony();
+		    } else if ("s".startsWith(targy)) {
+			listazVonatszam();
+		    } else if ("v".startsWith(targy)) {
+			listazVonat();
+		    }
+		} else if ("x".startsWith(command)) {
+		    lekerdezes(readString(tokenizer));
+		} else if ("e".startsWith(command)) {
+		    break;
+		} else {
+		    throw new Exception("Hibas parancs! (" + inputLine + ")");
+		}
+	    } catch (Exception e) {
+		System.out.println("? " + e.toString());
+	    }
+	}
 
     }
 
     static String readString(StringTokenizer tokenizer) throws Exception {
-        if (tokenizer.hasMoreElements()) {
-            return tokenizer.nextToken();
-        } else {
-            throw new Exception("Keves parameter!");
-        }
+	if (tokenizer.hasMoreElements()) {
+	    return tokenizer.nextToken();
+	} else {
+	    throw new Exception("Keves parameter!");
+	}
     }
 
-    //Uj entitÃ¡sok felvetelehez kapcsolodo szolgaltatások
+    // Uj entitÃ¡sok felvetelehez kapcsolodo szolgaltatï¿½sok
     protected void ujEntity(Object o) throws Exception {
-        em.getTransaction().begin();
-        try {
-            em.persist(o);
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            em.getTransaction().rollback();
-            throw e;
-        }
+	em.getTransaction().begin();
+	try {
+	    em.persist(o);
+	    em.getTransaction().commit();
+	} catch (Exception e) {
+	    em.getTransaction().rollback();
+	    throw e;
+	}
     }
 
     // Uj tipus felvetele
     public void ujTipus(String azonosito, String fajta) throws Exception {
-        //TODO
-        //Hozza létre az új "Tipus" entitást és rögzítse adatbázisban az "ujEntity" metódussal.
+	Query q = em.createQuery("SELECT t FROM Tipus t WHERE t.azonosito = :azon");
+	q.setParameter("azon", azonosito);
+	try {
+	    q.getSingleResult();
+	    System.out.println("?");
+	} catch (NoResultException e) {
+	    ujEntity(new Tipus(azonosito, fajta));
+	}
     }
 
     // Uj mozdony felvetele
-    public void ujMozdony(String sorszam, String tipusID, String futottkm) throws Exception {
-        //TODO
-        //Alakítsa át a megfelelõ típusokra a kapott String paramétereket.
-        //Ellenõrizze a típus létezését
-    	//Hozza létre az új "Mozdony" entitást és rögzítse adatbázisban az "ujEntity" metódussal.
+    public void ujMozdony(String sorszam, String tipusID, String futottkm)
+	    throws Exception {
+	int futottkmInt, sorszamInt;
+	try {
+	    sorszamInt = Integer.parseInt(sorszam);
+	    futottkmInt = Integer.parseInt(futottkm);
+	} catch (NumberFormatException exception) {
+	    System.out.println("?");
+	    return;
+	}
+	
+	Query tipusQuery = em.createQuery("SELECT t FROM Tipus t WHERE t.azonosito = :azon");
+	tipusQuery.setParameter("azon", tipusID);
+	
+	Tipus t = null;
+	try {
+	    t = (Tipus) tipusQuery.getSingleResult();
+	} catch (NoResultException e) {
+	    System.out.println("?");
+	    return;
+	}
+	
+	Query mozdonyQuery = em.createQuery("SELECT m FROM Mozdony m WHERE m.id = :azon");
+	mozdonyQuery.setParameter("azon", sorszamInt);
+	try {
+	    mozdonyQuery.getSingleResult();
+	    System.out.println("?");
+	} catch (NoResultException e) {
+	    ujEntity(new Mozdony(sorszamInt, futottkmInt, t));
+	}
     }
 
     // Uj vonatszam felvetele
     public void ujVonatszam(String sorszam, String uthossz) throws Exception {
-        //TODO
-        //Alakítsa át a megfelelõ típusokra a kapott String paramétereket.
-        //Ellenõrizze, hogy van-e már ilyen vonatszám
-    	//Hozza létre az új "Vonatszám" entitást és rögzítse adatbázisban az "ujEntity" metódussal.
+	// TODO
+	// Alakï¿½tsa ï¿½t a megfelelï¿½ tï¿½pusokra a kapott String paramï¿½tereket.
+	// Ellenï¿½rizze, hogy van-e mï¿½r ilyen vonatszï¿½m
+	// Hozza lï¿½tre az ï¿½j "Vonatszï¿½m" entitï¿½st ï¿½s rï¿½gzï¿½tse adatbï¿½zisban az
+	// "ujEntity" metï¿½dussal.
     }
 
     // Uj vonat felvetele
-    public void ujVonat(String vonatszamAzonosito, String datum, String mozdonySorszam, String keses) throws Exception {
-       	//TODO
-        //Alakítsa át a megfelelõ típusokra a kapott String paramétereket. Tipp: használja a SimpleDateFormat-ot
-    	//Formátum: "yyyy.MM.dd"
-        //Ellenõrizze, hogy érvényes-e a vonatszám, és létezik a mozdony.
-        //Ellenõrizze, hogy az adott napon nincs másik vonat ugyanezzel a vonatszámmal.		
-    	//Hozza létre az új "Vonat" entitást és rögzítse adatbázisban az "ujEntity" metódussal.
-        //Növelje a mozdony futottkm-ét a vonatszám szerinti úthosszal. 
+    public void ujVonat(String vonatszamAzonosito, String datum,
+	    String mozdonySorszam, String keses) throws Exception {
+	// TODO
+	// Alakï¿½tsa ï¿½t a megfelelï¿½ tï¿½pusokra a kapott String paramï¿½tereket.
+	// Tipp: hasznï¿½lja a SimpleDateFormat-ot
+	// Formï¿½tum: "yyyy.MM.dd"
+	// Ellenï¿½rizze, hogy ï¿½rvï¿½nyes-e a vonatszï¿½m, ï¿½s lï¿½tezik a mozdony.
+	// Ellenï¿½rizze, hogy az adott napon nincs mï¿½sik vonat ugyanezzel a
+	// vonatszï¿½mmal.
+	// Hozza lï¿½tre az ï¿½j "Vonat" entitï¿½st ï¿½s rï¿½gzï¿½tse adatbï¿½zisban az
+	// "ujEntity" metï¿½dussal.
+	// Nï¿½velje a mozdony futottkm-ï¿½t a vonatszï¿½m szerinti ï¿½thosszal.
     }
 
-    //Listazasi szolgaltatasok
+    // Listazasi szolgaltatasok
     public void listazEntity(List list) {
-        for (Object o : list) {
-            System.out.println(o);
-        }
+	for (Object o : list) {
+	    System.out.println(o);
+	}
     }
 
-    //Tipusok listazasa
+    // Tipusok listazasa
     public void listazTipus() throws Exception {
-        listazEntity(em.createQuery("SELECT t FROM Tipus t").getResultList());
+	listazEntity(em.createQuery("SELECT t FROM Tipus t").getResultList());
     }
 
-    //Mozdonyok listazasa
+    // Mozdonyok listazasa
     public void listazMozdony() throws Exception {
-    	//TODO    	
-    	//Készítsen lekérdezést, amely visszaadja az összes mozdonyt, majd
-        //irassa ki a listazEntity metódussal az eredményt.
+	
+	Query mozdonyQuery = em.createQuery("SELECT m FROM Mozdony m");
+	listazEntity(mozdonyQuery.getResultList());
     }
 
-    //Vonatszamok listazasa
+    // Vonatszamok listazasa
     public void listazVonatszam() throws Exception {
-    	//TODO    	
-    	//Készítsen lekérdezést, amely visszaadja az összes vonatszámot, majd
-        //irassa ki a listazEntity metódussal az eredményt.
+	// TODO
+	// Kï¿½szï¿½tsen lekï¿½rdezï¿½st, amely visszaadja az ï¿½sszes vonatszï¿½mot, majd
+	// irassa ki a listazEntity metï¿½dussal az eredmï¿½nyt.
     }
 
-    //Vonatok listazasa
+    // Vonatok listazasa
     public void listazVonat() throws Exception {
-    	//TODO    	
-    	//Készítsen lekérdezést, amely visszaadja az összes vonatot, majd
-        //irassa ki a listazEntity metódussal az eredményt.
+	// TODO
+	// Kï¿½szï¿½tsen lekï¿½rdezï¿½st, amely visszaadja az ï¿½sszes vonatot, majd
+	// irassa ki a listazEntity metï¿½dussal az eredmï¿½nyt.
     }
 
-    //Egyedi lekerdezes
+    // Egyedi lekerdezes
     public void lekerdezes(String datum) throws Exception {
-    	//TODO    	
-        //Írja ki a paraméterként kapott napra (INPUTNAP) vonatkozóan, hogy az
-        //egyes mozdony-fajták az adott napon összesen hány kilométert futottak.    	
-        //Alakítsa át a megfelelõ típusokra a kapott String paramétereket. Tipp: használja a SimpleDateFormat-ot
-        //Tipp: Nézzen utána a "többszörös SELECT" kezelésének
+	// TODO
+	// ï¿½rja ki a paramï¿½terkï¿½nt kapott napra (INPUTNAP) vonatkozï¿½an, hogy az
+	// egyes mozdony-fajtï¿½k az adott napon ï¿½sszesen hï¿½ny kilomï¿½tert
+	// futottak.
+	// Alakï¿½tsa ï¿½t a megfelelï¿½ tï¿½pusokra a kapott String paramï¿½tereket.
+	// Tipp: hasznï¿½lja a SimpleDateFormat-ot
+	// Tipp: Nï¿½zzen utï¿½na a "tï¿½bbszï¿½rï¿½s SELECT" kezelï¿½sï¿½nek
     }
 }
