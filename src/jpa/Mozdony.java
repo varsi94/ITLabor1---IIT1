@@ -1,17 +1,22 @@
 package jpa;
 
+import java.util.List;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 @Entity
 public class Mozdony {
 
     @Id
     private int id;
-    private int futottkm;
+    private long futottkm;
     @ManyToOne
     private Tipus tipus;
+    @OneToMany(mappedBy = "mozdony")
+    private List<Vonat> vonatok;
     
     public Mozdony(int id, int futottkm, Tipus tipus) {
 	this.id = id;
@@ -22,11 +27,11 @@ public class Mozdony {
     public Mozdony() {
     }
 
-    public int getFutottkm() {
+    public long getFutottkm() {
 	return futottkm;
     }
 
-    public void setFutottkm(int futottkm) {
+    public void setFutottkm(long futottkm) {
 	this.futottkm = futottkm;
     }
 
@@ -49,5 +54,13 @@ public class Mozdony {
     @Override
     public String toString() {
         return id + " " + tipus.getAzonosito() + " " + futottkm;
+    }
+
+    public List<Vonat> getVonatok() {
+        return vonatok;
+    }
+
+    public void setVonatok(List<Vonat> vonatok) {
+        this.vonatok = vonatok;
     }
 }

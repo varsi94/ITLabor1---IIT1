@@ -2,6 +2,9 @@ package jpa;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -10,7 +13,6 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
-import javax.print.attribute.standard.MediaSize.Other;
 
 public class Program {
 
@@ -183,16 +185,58 @@ public class Program {
     // Uj vonat felvetele
     public void ujVonat(String vonatszamAzonosito, String datum,
 	    String mozdonySorszam, String keses) throws Exception {
-	// TODO
-	// Alak�tsa �t a megfelel� t�pusokra a kapott String param�tereket.
-	// Tipp: haszn�lja a SimpleDateFormat-ot
-	// Form�tum: "yyyy.MM.dd"
-	// Ellen�rizze, hogy �rv�nyes-e a vonatsz�m, �s l�tezik a mozdony.
-	// Ellen�rizze, hogy az adott napon nincs m�sik vonat ugyanezzel a
-	// vonatsz�mmal.
-	// Hozza l�tre az �j "Vonat" entit�st �s r�gz�tse adatb�zisban az
-	// "ujEntity" met�dussal.
-	// N�velje a mozdony futottkm-�t a vonatsz�m szerinti �thosszal.
+	int vonatszam, mozdonyID, kesesInt;
+	Date datumParsed;
+	
+	try {
+	    vonatszam = Integer.parseInt(vonatszamAzonosito);
+	    mozdonyID = Integer.parseInt(mozdonySorszam);
+	    kesesInt = Integer.parseInt(keses);
+	    SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd");
+	    datumParsed = sdf.parse(datum);
+	} catch (NumberFormatException e) {
+	    System.out.println("?");
+	    return;
+	} catch (ParseException e) {
+	    System.out.println("?");
+	    return;
+	}
+	
+	Vonatszam vsz;
+	try {
+	    Query vonatszamQuery = em.createQuery("SELECT vsz FROM Vonatszam vsz WHERE vsz.szam = :szam");
+	    vonatszamQuery.setParameter("szam", vonatszam);
+	    vsz = (Vonatszam) vonatszamQuery.getSingleResult();
+	} catch (NoResultException e) {
+	    System.out.println("?");
+	    return;
+	}
+	
+	Mozdony mozdony;
+	try {
+	    Query mozdonyQuery = em.createQuery("SELECT m FROM Mozdony m WHERE m.id = :id");
+	    mozdonyQuery.setParameter("id", mozdonyID);
+	    mozdony = (Mozdony) mozdonyQuery.getSingleResult();
+	} catch (NoResultException e) {
+	    System.out.println("?");
+	    return;
+	}
+	
+	try {
+	    Query vonatQuery = em.createQuery("SELECT v FROM Vonat v WHERE v.datum = :datum AND v.vonatSzam = :vsz");
+	    vonatQuery.setParameter("datum", datumParsed);
+	    vonatQuery.setParameter("vsz", vsz);
+	    vonatQuery.getSingleResult();
+	    System.out.println("?");
+	    return;
+	} catch (NoResultException e) {
+	    //jók vagyunk, mehetünk tovább
+	    ujEntity(new Vonat(datumParsed, kesesInt, mozdony, vsz));
+	    em.getTransaction().begin();
+	    mozdony.setFutottkm(mozdony.getFutottkm() + vsz.getUthossz());
+	    em.persist(mozdony);
+	    em.getTransaction().commit();
+	}
     }
 
     // Listazasi szolgaltatasok
@@ -220,19 +264,28 @@ public class Program {
 
     // Vonatok listazasa
     public void listazVonat() throws Exception {
-	// TODO
-	// K�sz�tsen lek�rdez�st, amely visszaadja az �sszes vonatot, majd
-	// irassa ki a listazEntity met�dussal az eredm�nyt.
+	listazEntity(em.createQuery("SELECT v FROM Vonat v").getResultList());
     }
 
     // Egyedi lekerdezes
     public void lekerdezes(String datum) throws Exception {
-	// TODO
-	// �rja ki a param�terk�nt kapott napra (INPUTNAP) vonatkoz�an, hogy az
-	// egyes mozdony-fajt�k az adott napon �sszesen h�ny kilom�tert
-	// futottak.
-	// Alak�tsa �t a megfelel� t�pusokra a kapott String param�tereket.
-	// Tipp: haszn�lja a SimpleDateFormat-ot
-	// Tipp: N�zzen ut�na a "t�bbsz�r�s SELECT" kezel�s�nek
+	Date datumParsed;
+	try {
+	    SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd");
+	    datumParsed = sdf.parse(datum);
+	} catch (ParseException e) {
+	    System.out.println("?");
+	    return;
+	}
+	
+	Query query = em.createQuery("SELECT t.fajta, SUM(vsz.uthossz) "
+		+ "FROM Tipus t, Mozdony m, Vonat v, Vonatszam vsz "
+		+ "WHERE v.datum = :input AND v.vonatSzam = vsz AND v.mozdony = m AND m.tipus = t "
+		+ "GROUP BY t.fajta");
+	query.setParameter("input", datumParsed);
+	List<Object[]> result = query.getResultList();
+	for (Object[] item : result) {
+	    System.out.println(item[0] + " " + item[1]);
+	}
     }
 }
