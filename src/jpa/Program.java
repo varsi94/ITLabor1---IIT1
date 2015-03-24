@@ -112,6 +112,10 @@ public class Program {
 
     // Uj tipus felvetele
     public void ujTipus(String azonosito, String fajta) throws Exception {
+	if (!fajta.equals("goz") && !fajta.equals("villany") && !fajta.equals("diesel")) {
+	    System.out.println("?");
+	    return;
+	}
 	Query q = em
 		.createQuery("SELECT t FROM Tipus t WHERE t.azonosito = :azon");
 	q.setParameter("azon", azonosito);
